@@ -1,4 +1,6 @@
 import Article from "@/components/article";
+import ArticleCard from "@/components/article-card";
+import Footer from "@/components/footer";
 import NavbarSM from "@/components/navbar-sm";
 import React from "react";
 
@@ -14,6 +16,35 @@ Dev Mode is a new interface within Figma that provides developer-focused tools a
 `;
 
 export default function page() {
+  const dummyResponse = {
+    data: Array.from({ length: 3 }).map((_, idx) => ({
+      id: String(idx + 1),
+      title: `Article Title ${idx + 1}`,
+      content: `This is the content for article ${idx + 1}.`,
+      userId: "1",
+      categoryId: "1",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      imageUrl:
+        "https://i.pinimg.com/736x/61/99/16/619916e8690c7487680f3183dbe19e63.jpg",
+      category: {
+        id: "1",
+        name: idx % 2 === 0 ? "Design" : "Development",
+        userId: "1",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      user: {
+        id: "1",
+        username: "andika",
+        role: "User",
+      },
+    })),
+    total: 6,
+    page: 1,
+    limit: 6,
+  };
+
   return (
     <div>
       <NavbarSM />
@@ -46,7 +77,18 @@ export default function page() {
       </div>
 
       {/* container other article */}
-      <div className="pt-[40px] px-[20px] md:px-[180px] md:pb-[100px] pb-[60px] space-y-[24px] md:space-y-[60px]"></div>
+      <div className="pt-[40px] px-[20px] md:px-[180px] md:pb-[100px] pb-[60px] space-y-[24px] md:space-y-[60px]">
+        <p className="font-archivo text-lg font-bold leading-[28px] md:text-xl text-slate-900">
+          other articles
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-[24px] md:gap-[40px]">
+          {dummyResponse.data.map((article) => {
+            return <ArticleCard article={article} key={article.id} />;
+          })}
+        </div>
+      </div>
+
+      <Footer />
     </div>
   );
 }
