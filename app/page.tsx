@@ -1,103 +1,167 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
+import NavbarMD from "@/components/navbar-md";
+import NavbarSM from "@/components/navbar-sm";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Search } from "lucide-react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ResponseDummyArticle } from "./api/dummy/article/route";
+import axios from "axios";
+import ArticleCard from "@/components/article-card";
+import LoadingArticleCard from "@/components/loading-article-card";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [articles, setArticles] = useState<ResponseDummyArticle["data"]>([]);
+  const [dataArticle, setDataArticle] = useState<{
+    total: number;
+    page: number;
+    limit: number;
+  }>({
+    total: 0,
+    page: 1,
+    limit: 9,
+  });
+  const [loading, setLoading] = useState(true);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  // get dummy data
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        const res = await axios.get("/api/dummy/article");
+        const json: ResponseDummyArticle = await res.data;
+        setArticles(json.data);
+        setDataArticle({
+          total: json.total,
+          page: json.page,
+          limit: json.limit,
+        });
+      } catch (err) {
+        console.error("Error fetching articles:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArticles();
+  }, []);
+
+  return (
+    <main>
+      {/* navbar mobile */}
+      <div className="md:hidden">
+        <NavbarSM />
+      </div>
+
+      {/* hero */}
+      <div className="h-[560px] md:h-[500px] relative bg-[url(/banner.jpg)] opacity-[86] bg-cover bg-center flex items-center justify-center">
+        <div className="bg-[#2563EBDB] absolute w-full h-full opacity-[86]"></div>
+        <NavbarMD />
+
+        {/* container */}
+        <div className="w-[90%] md:w-[730px] flex flex-col gap-[40px]">
+          <div className="text-white z-10 text-center font-archivo flex flex-col gap-[12px]">
+            <p className="font-bold text-base">Blog genzet</p>
+            <p className="text-4xl md:text-5xl font-medium">
+              The Journal : Design Resources, Interviews, and Industry News
+            </p>
+            <p className="text-xl md:text-2xl">
+              Your daily dose of design insights!
+            </p>
+          </div>
+
+          {/* filter */}
+          <div className="bg-blue-500 w-full md:w-fit rounded-[12px] p-[10px] flex flex-col md:flex-row gap-[8px] z-10 mx-auto">
+            <Select>
+              <SelectTrigger className="w-full md:w-[180px] md:h-[40px] bg-white font-archivo font-normal">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent className="text-black font-archivo">
+                <SelectItem value="design">Design</SelectItem>
+                <SelectItem value="development">Development</SelectItem>
+                <SelectItem value="news">News</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <div className="relative w-full md:w-[400px] ">
+              <Search
+                className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+                size={16}
+              />
+              <Input
+                placeholder="Search articles"
+                className="pl-8 bg-white font-archivo"
+              />
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+      </div>
+
+      {/* content */}
+      <div className="pt-[40px] pb-[60px] md:pb-[100px] px-[20px] md:px-[100px] flex flex-col gap-[24px]">
+        <p className="font-archivo text-base text-medium text-slate-600 leading-[24px]">
+          Showing : {articles.length} articles of {dataArticle.total}
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-[40px] md:gap-y-[60px] md:gap-x-[40px]">
+          {/* loading condition */}
+          {loading ? (
+            <LoadingArticleCard />
+          ) : (
+            articles.map((article) => (
+              <ArticleCard article={article} key={article.id} />
+            ))
+          )}
+        </div>
+
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious href="#" />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationLink href="#">1</PaginationLink>
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationEllipsis />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationNext href="#" />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
+
+      {/* footer */}
+      <footer className="h-[100px] px-[48px] flex items-center justify-center bg-[#2563EBDB]">
+        <div className="flex flex-col md:flex-row gap-[8px] md:gap-[16px] justify-center items-center">
+          <img
+            src="/logo/logo-putih.svg"
+            alt="logo"
+            className="w-[122px] h-[22px] md:w-[133.4px] md:h-[24px] "
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+          <p className="text-center text-white text-sm font-normal leading-[20px]">
+            © 2025 Blog genzet. All rights reserved.
+          </p>
+        </div>
       </footer>
-    </div>
+    </main>
   );
 }
