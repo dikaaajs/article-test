@@ -10,6 +10,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, LoginSchema } from "@/schemas/authSchema";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
+import { toast } from "sonner";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
 export function LoginForm({
   className,
@@ -22,11 +25,50 @@ export function LoginForm({
   } = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
   });
+  const router = useRouter();
 
-  const onSubmit = (data: LoginSchema) => {
-    console.log("Data form:", data);
-    // axios.post("/api/register", data)
+  const onSubmit = async (data: LoginSchema) => {
+    const host = process.env.NEXT_PUBLIC_HOST_API;
+
+    try {
+      // Kirim request ke API login
+      const res = await axios.post(`${host}/auth/login`, data);
+
+      if (res.status === 401) {
+        toast.error("Username atau password salah.");
+        return;
+      }
+
+      if (res.status === 200) {
+        // Simpan token ke localStorage
+        if (res.data?.token) {
+          localStorage.setItem("token", res.data.token);
+        }
+
+        const profileRes = await axios.get(`${host}/auth/profile`, {
+          headers: {
+            Authorization: `Bearer ${res.data.token}`,
+          },
+        });
+        console.log(profileRes);
+        if (profileRes.status === 200 && profileRes.data) {
+          localStorage.setItem("user", JSON.stringify(profileRes.data));
+        }
+
+        toast.success("Login berhasil! Selamat datang 🎉");
+        router.push("/");
+      } else {
+        toast.error(res.data?.message || "Login gagal, coba lagi.");
+      }
+    } catch (error: any) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || error.message);
+      } else {
+        toast.error("Terjadi kesalahan, coba lagi.");
+      }
+    }
   };
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="">

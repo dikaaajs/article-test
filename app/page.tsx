@@ -3,15 +3,7 @@
 import { useEffect, useState } from "react";
 import NavbarMD from "@/components/navbar-md";
 import NavbarSM from "@/components/navbar-sm";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Search } from "lucide-react";
 import {
   Pagination,
@@ -22,12 +14,12 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Skeleton } from "@/components/ui/skeleton";
 import { ResponseDummyArticle } from "./api/dummy/article/route";
 import axios from "axios";
 import ArticleCard from "@/components/article-card";
 import LoadingArticleCard from "@/components/loading-article-card";
 import Footer from "@/components/footer";
+import SelectCategory from "@/components/select-category";
 
 export default function Home() {
   const [articles, setArticles] = useState<ResponseDummyArticle["data"]>([]);
@@ -42,25 +34,30 @@ export default function Home() {
   });
   const [loading, setLoading] = useState(true);
 
-  // get dummy data
-  useEffect(() => {
-    const fetchArticles = async () => {
-      try {
-        const res = await axios.get("/api/dummy/article");
-        const json: ResponseDummyArticle = await res.data;
-        setArticles(json.data);
-        setDataArticle({
-          total: json.total,
-          page: json.page,
-          limit: json.limit,
-        });
-      } catch (err) {
-        console.error("Error fetching articles:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchArticles = async (category?: string, title?: string) => {
+    const host = process.env.NEXT_PUBLIC_HOST_API;
+    const params: Record<string, string | number> = {};
 
+    if (category) params.category = category;
+    if (title) params.title = title;
+
+    try {
+      const res = await axios.get(`${host}/articles`, { params });
+      const json: ResponseDummyArticle = res.data;
+      setArticles(json.data);
+      setDataArticle({
+        total: json.total,
+        page: json.page,
+        limit: json.limit,
+      });
+    } catch (err) {
+      console.error("Error fetching articles:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchArticles();
   }, []);
 
@@ -90,16 +87,13 @@ export default function Home() {
 
           {/* filter */}
           <div className="bg-blue-500 w-full md:w-fit rounded-[12px] p-[10px] flex flex-col md:flex-row gap-[8px] z-10 mx-auto">
-            <Select>
-              <SelectTrigger className="w-full md:w-[180px] md:h-[40px] bg-white font-archivo font-normal">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent className="text-black font-archivo">
-                <SelectItem value="design">Design</SelectItem>
-                <SelectItem value="development">Development</SelectItem>
-                <SelectItem value="news">News</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* select category */}
+            <SelectCategory
+              className="w-full md:w-[180px] md:h-[40px]"
+              onChange={(value) => {
+                fetchArticles(value);
+              }}
+            />
 
             <div className="relative w-full md:w-[400px] ">
               <Search

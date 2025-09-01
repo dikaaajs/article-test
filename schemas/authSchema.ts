@@ -6,7 +6,7 @@ export const registerSchema = z.object({
     .nonempty("Username field cannot be empty")
     .min(3, "Username must be at least 3 characters long"),
   password: z.string().min(8, "Password must be at least 8 characters long"),
-  role: z.enum(["admin", "user"], {
+  role: z.enum(["Admin", "User"], {
     message: "Role must be selected",
   }),
 });

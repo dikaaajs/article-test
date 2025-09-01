@@ -17,6 +17,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, RegisterSchema } from "@/schemas/authSchema";
 import { useForm, Controller } from "react-hook-form";
 import Link from "next/link";
+import axios from "axios";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export function RegisterForm({
   className,
@@ -30,10 +33,26 @@ export function RegisterForm({
   } = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema),
   });
+  const router = useRouter();
 
-  const onSubmit = (data: RegisterSchema) => {
-    console.log("Data form:", data);
-    // axios.post("/api/register", data)
+  const onSubmit = async (data: RegisterSchema) => {
+    const host = process.env.NEXT_PUBLIC_HOST_API;
+
+    try {
+      const res = await axios.post(`${host}/auth/register`, data);
+
+      if (res.status === 200 || res.status === 201) {
+        toast.success("Register berhasil! Silahkan login.");
+        router.push("/auth/login");
+      } else {
+      }
+    } catch (error: any) {
+      if (axios.isAxiosError(error)) {
+        toast.error(`${error.response?.data?.error || error.message}`);
+      } else {
+        toast.error("Unexpected error:", error);
+      }
+    }
   };
 
   return (
@@ -92,8 +111,8 @@ export function RegisterForm({
                         <SelectValue placeholder="Select Role" />
                       </SelectTrigger>
                       <SelectContent className="font-archivo">
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="user">User</SelectItem>
+                        <SelectItem value="Admin">Admin</SelectItem>
+                        <SelectItem value="User">User</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
