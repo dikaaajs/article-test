@@ -11,8 +11,16 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "./ui/button";
+import axios from "axios";
+import { toast } from "sonner";
 
-export default function DeleteButtonArticles({ id }: { id: number }) {
+export default function DeleteButtonArticles({
+  id,
+  onUpdated,
+}: {
+  id: number;
+  onUpdated: any;
+}) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -34,9 +42,21 @@ export default function DeleteButtonArticles({ id }: { id: number }) {
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
-            onClick={() => {
-              console.log("delete");
-              console.log(id);
+            onClick={async () => {
+              try {
+                const host = process.env.NEXT_PUBLIC_HOST_API;
+                const token = localStorage.getItem("token");
+                await axios.delete(`${host}/articles/${id}`, {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                });
+                toast.success("berhasil menghapus article");
+                onUpdated();
+              } catch (error) {
+                console.error("Delete failed:", error);
+                toast.error("gagal menghapus article");
+              }
             }}
           >
             delete

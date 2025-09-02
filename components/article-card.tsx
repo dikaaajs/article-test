@@ -18,13 +18,19 @@ export default function ArticleCard({
         <p className="text-xs md:text-sm text-slate-600">
           {new Date(article.createdAt).toDateString()}
         </p>
-        <a
-          href={`/article/${article.id}`}
-          className="font-semibold text-[16px] md:text-lg text-slate-900"
-        >
-          {article.title}
-        </a>
-        <p className="text-sm md:text-base text-slate-600">{article.content}</p>
+        <div className="h-[25px] overflow-clip">
+          <a
+            href={`/article/${article.id}`}
+            className="font-semibold text-[16px] md:text-lg text-slate-900"
+          >
+            {article.title}
+          </a>
+        </div>
+        <div className="h-[70px] overflow-hidden">
+          <p className="text-sm md:text-base text-slate-600">
+            {article.content}
+          </p>
+        </div>
         <div className="flex gap-[8px]">
           <Badge
             variant="secondary"

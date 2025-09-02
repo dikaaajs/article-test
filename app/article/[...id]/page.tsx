@@ -2,8 +2,9 @@ import Article from "@/components/article";
 import ArticleCard from "@/components/article-card";
 import Footer from "@/components/footer";
 import NavbarSM from "@/components/navbar-sm";
+import axios from "axios";
 
-interface ArticleType {
+export interface ArticleType {
   id: string;
   title: string;
   content: string;
@@ -29,12 +30,12 @@ interface ArticleType {
 // fetch detail article
 async function getArticle(id: string): Promise<ArticleType> {
   const host = process.env.NEXT_PUBLIC_HOST_API;
-  const res = await fetch(`${host}/articles/${id}`);
-
-  if (!res.ok) {
+  try {
+    const res = await axios.get(`${host}/articles/${id}`);
+    return res.data;
+  } catch (error) {
     throw new Error("Failed to fetch article");
   }
-  return res.json();
 }
 
 // fetch related article (same category)
@@ -43,15 +44,15 @@ async function getRelatedArticles(
   excludeId: string
 ): Promise<ArticleType[]> {
   const host = process.env.NEXT_PUBLIC_HOST_API;
-  const res = await fetch(`${host}/articles?categoryId=${categoryId}&limit=3`, {
-    cache: "no-store",
-  });
-
-  if (!res.ok) return [];
-  const data = await res.json();
-
-  // buang artikel utama
-  return (data.data || []).filter((a: ArticleType) => a.id !== excludeId);
+  try {
+    const res = await axios.get(`${host}/articles`, {
+      params: { categoryId, limit: 3 },
+    });
+    // buang artikel utama
+    return (res.data.data || []).filter((a: ArticleType) => a.id !== excludeId);
+  } catch (error) {
+    return [];
+  }
 }
 
 export default async function Page({ params }: { params: { id: string } }) {

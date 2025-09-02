@@ -8,11 +8,13 @@ import { toast } from "sonner";
 interface ImageUploadProps {
   onFileSelect?: (file: File | null) => void;
   onUploadSuccess?: (url: string) => void;
+  imgDefault?: string;
 }
 
 export default function ImageUpload({
   onFileSelect,
   onUploadSuccess,
+  imgDefault,
 }: ImageUploadProps) {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -75,9 +77,29 @@ export default function ImageUpload({
             {file ? (
               <>
                 <img
-                  src={file ? URL.createObjectURL(file) : ""}
+                  src={URL.createObjectURL(file)}
                   className="rounded-lg w-full h-full object-cover"
-                  alt={file?.name || "Uploaded image"}
+                  alt={file.name || "Uploaded image"}
+                />
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-lg">
+                  <span className="text-white text-xs font-medium">
+                    Replace image
+                  </span>
+                </div>
+                <input
+                  id="dropzone-file"
+                  type="file"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  accept="image/png, image/jpeg"
+                  onChange={handleFileChange}
+                />
+              </>
+            ) : imgDefault ? (
+              <>
+                <img
+                  src={imgDefault}
+                  className="rounded-lg w-full h-full object-cover"
+                  alt="Default image"
                 />
                 <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-lg">
                   <span className="text-white text-xs font-medium">

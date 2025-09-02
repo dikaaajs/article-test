@@ -140,7 +140,7 @@ export default function page() {
               />
               <InputWithIcon
                 icon={<Search size={16} />}
-                placeholder="Search Category"
+                placeholder="Search By Title"
                 className="w-[240px]"
                 onDebouncedChange={(val) => {
                   fetchArticles(filter.category, val, 1);
@@ -187,7 +187,10 @@ export default function page() {
                   </TableCell>
                   <TableCell className="text-left">{article.title}</TableCell>
                   <TableCell>{article.category.name}</TableCell>
-                  <TableCell>{article.createdAt}</TableCell>
+
+                  <TableCell>
+                    {new Date(article.createdAt).toDateString()}
+                  </TableCell>
 
                   <TableCell className="flex justify-center items-center gap-[12px]">
                     <Link href={`/article/${article.id}`}>
@@ -210,14 +213,18 @@ export default function page() {
                     </a>
 
                     {/* delete button */}
-                    <DeleteButtonArticles id={article.id} />
+                    <DeleteButtonArticles
+                      onUpdated={() => {
+                        fetchArticles(filter.category, filter.title);
+                      }}
+                      id={article.id}
+                    />
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
 
-          {/* pagination */}
           {/* pagination */}
           {totalPages > 1 && (
             <Pagination>
