@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 
 interface InputWithIconProps
@@ -20,12 +20,18 @@ export const InputWithIcon: React.FC<InputWithIconProps> = ({
   ...props
 }) => {
   const [value, setValue] = useState(props.value?.toString() || "");
+  const prevValue = useRef(value); // simpan value sebelumnya
 
   // efek untuk debounce
   useEffect(() => {
     if (!onDebouncedChange) return;
+
     const handler = setTimeout(() => {
-      onDebouncedChange(value);
+      // cek apakah ada perubahan
+      if (value !== prevValue.current) {
+        onDebouncedChange(value);
+        prevValue.current = value; // update prev
+      }
     }, debounceDelay);
 
     return () => {

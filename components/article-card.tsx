@@ -12,7 +12,7 @@ export default function ArticleCard({
       <img
         src={article.imageUrl}
         alt={article.title}
-        className="rounded-[12px] object-cover h-[200px] md:h-[240px] w-full"
+        className="rounded-[12px] object-cover h-[200px] md:h-[240px] w-full items-center bg-slate-100 text-center font-archivo font-semibold text-muted-foreground"
       />
       <div className="flex flex-col gap-[8px] font-archivo">
         <p className="text-xs md:text-sm text-slate-600">

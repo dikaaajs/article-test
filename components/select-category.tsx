@@ -33,7 +33,7 @@ export default function SelectCategory({
     async function fetchCategories() {
       const host = process.env.NEXT_PUBLIC_HOST_API;
       try {
-        const res = await axios.get(`${host}/categories`);
+        const res = await axios.get(`${host}/categories?limit=100`);
         const validCategories = (res.data.data || []).filter(
           (cat: Category) => cat.id && cat.id.trim() !== ""
         );

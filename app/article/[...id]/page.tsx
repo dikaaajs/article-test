@@ -43,7 +43,7 @@ async function getRelatedArticles(
   excludeId: string
 ): Promise<ArticleType[]> {
   const host = process.env.NEXT_PUBLIC_HOST_API;
-  const res = await fetch(`${host}/articles?categoryId=${categoryId}&limit=4`, {
+  const res = await fetch(`${host}/articles?categoryId=${categoryId}&limit=3`, {
     cache: "no-store",
   });
 
