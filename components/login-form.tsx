@@ -50,7 +50,6 @@ export function LoginForm({
             Authorization: `Bearer ${res.data.token}`,
           },
         });
-        console.log(profileRes);
         if (profileRes.status === 200 && profileRes.data) {
           localStorage.setItem("user", JSON.stringify(profileRes.data));
         }

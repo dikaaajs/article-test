@@ -1,28 +1,69 @@
-/**
- * v0 by Vercel.
- * @see https://v0.app/t/SzicctxPeO8
- * Documentation: https://v0.app/docs#integrating-generated-code-into-your-nextjs-app
- */
 "use client";
 
 import { useState } from "react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
+import { toast } from "sonner";
 
-export default function ImageUpload() {
-  const [file, setFile] = useState<any>(null);
-  const handleFileChange = (e: any) => {
-    setFile(e.target.files[0]);
+interface ImageUploadProps {
+  onFileSelect?: (file: File | null) => void;
+  onUploadSuccess?: (url: string) => void;
+}
+
+export default function ImageUpload({
+  onFileSelect,
+  onUploadSuccess,
+}: ImageUploadProps) {
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0] || null;
+    setFile(selectedFile);
+    if (onFileSelect) {
+      onFileSelect(selectedFile); // kirim ke parent
+    }
   };
-  const handleSubmit = (e: any) => {
-    console.log("Uploading file:", file);
+
+  const handleSubmit = async () => {
+    if (!file) return;
+
+    try {
+      const host = process.env.NEXT_PUBLIC_HOST_API;
+      const token = localStorage.getItem("token");
+
+      const formData = new FormData();
+      formData.append("image", file);
+      setUploading(true);
+
+      const res = await axios.post(`${host}/upload`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      toast.success("Upload success");
+      setUploading(false);
+      const imageUrl = res.data.imageUrl;
+
+      if (imageUrl && onUploadSuccess) {
+        onUploadSuccess(imageUrl);
+      }
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        console.error(
+          "Upload error:",
+          err.response?.status,
+          err.response?.data
+        );
+      }
+
+      console.error("Upload error:", err);
+      toast.error("Upload error");
+    }
   };
+
   return (
     <>
       <div className="flex items-center justify-center w-full">
@@ -30,32 +71,60 @@ export default function ImageUpload() {
           htmlFor="dropzone-file"
           className="flex flex-col items-center justify-center w-full border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
         >
-          <div className="flex flex-col items-center justify-center pt-5 pb-6">
-            <UploadIcon className="w-10 h-10 text-gray-400" />
-            <p className="mb-2 text-xs text-gray-500 dark:text-gray-400 underline">
-              Click to select file
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Suport File Type : jpg or png
-            </p>
+          <div className="relative w-full h-full group">
+            {file ? (
+              <>
+                <img
+                  src={file ? URL.createObjectURL(file) : ""}
+                  className="rounded-lg w-full h-full object-cover"
+                  alt={file?.name || "Uploaded image"}
+                />
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-lg">
+                  <span className="text-white text-xs font-medium">
+                    Replace image
+                  </span>
+                </div>
+                <input
+                  id="dropzone-file"
+                  type="file"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  accept="image/png, image/jpeg"
+                  onChange={handleFileChange}
+                />
+              </>
+            ) : (
+              <>
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <UploadIcon className="w-10 h-10 text-gray-400" />
+                  <p className="mb-2 text-xs text-gray-500 dark:text-gray-400 underline">
+                    Click to select file
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Support File Type : jpg or png
+                  </p>
+                </div>
+                <input
+                  id="dropzone-file"
+                  type="file"
+                  className="hidden"
+                  accept="image/png, image/jpeg"
+                  onChange={handleFileChange}
+                />
+              </>
+            )}
           </div>
-          <input
-            id="dropzone-file"
-            type="file"
-            className="hidden"
-            onChange={handleFileChange}
-          />
         </label>
       </div>
+
       {file && (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mt-2 gap-[10px]">
           <div>
-            <p className="font-medium">{file.name}</p>
+            <p className="font-medium text-xs">{file.name}</p>
             <p className="text-sm text-muted-foreground">
               {(file.size / 1024).toFixed(2)} KB
             </p>
           </div>
-          <Button type="button" onClick={() => handleSubmit}>
+          <Button type="button" onClick={handleSubmit} disabled={uploading}>
             Upload
           </Button>
         </div>
